@@ -14,7 +14,7 @@ cleanLog:
 run: bios.bin logfiles
 	qemu-system-x86_64 -serial stdio -vga std -d in_asm,cpu_reset,exec,unimp,int -no-reboot -no-shutdown -D logfiles/logfile$$(date "+%y-%m-%d-%H:%M:%S").txt -bios bios.bin
 
-run-debug: bios.bin logfiles
+debug: bios.bin logfiles
 	qemu-system-x86_64 -serial stdio -vga std -d in_asm,cpu_reset,exec,unimp,int -no-reboot -no-shutdown -D logfiles/logfile$$(date "+%y-%m-%d-%H:%M:%S").txt -bios bios.bin -S -s
 
 logfiles:

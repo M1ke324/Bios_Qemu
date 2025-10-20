@@ -1,6 +1,4 @@
-.PHONY: all clean run cleanLog run-debug logfiles
-
-all: bios.bin 
+.PHONY:  clean run cleanLog debug 
 
 bios.bin: entry.asm 
 	nasm -f bin entry.asm -o bios.bin

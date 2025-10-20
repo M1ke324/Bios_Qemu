@@ -18,7 +18,7 @@ Install examples:
 
 The included Makefile automates assembling, linking and running the BIOS image. Common targets:
 
-- `bios.bin` (default)
+- `bios.bin` (default)  
     Assemble source files with nasm
 
 - `run`  

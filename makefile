@@ -10,10 +10,10 @@ cleanLog:
 	rm -rf logfiles/*.txt
 
 run: bios.bin logfiles
-	qemu-system-x86_64 -serial stdio -vga std -d in_asm,cpu_reset,exec,unimp,int -no-reboot -no-shutdown -D logfiles/logfile$$(date "+%y-%m-%d-%H:%M:%S").txt -bios bios.bin
+	qemu-system-x86_64 -vga std -d in_asm,cpu_reset,exec,unimp,int -no-reboot -no-shutdown -D logfiles/logfile$$(date "+%y-%m-%d-%H:%M:%S").txt -bios bios.bin
 
 debug: bios.bin logfiles
-	qemu-system-x86_64 -serial stdio -vga std -d in_asm,cpu_reset,exec,unimp,int -no-reboot -no-shutdown -D logfiles/logfile$$(date "+%y-%m-%d-%H:%M:%S").txt -bios bios.bin -S -s
+	qemu-system-x86_64 -vga std -d in_asm,cpu_reset,exec,unimp,int -no-reboot -no-shutdown -D logfiles/logfile$$(date "+%y-%m-%d-%H:%M:%S").txt -bios bios.bin -S -s
 
 logfiles:
 	mkdir -p logfiles

@@ -7,18 +7,18 @@ align 4
 ; ======== GDT =======
 
 temp_gdt: 
-    DQ 0 ; NULL first descriptor 
+  DQ 0 ; NULL first descriptor 
 
-; Descrittore segmento codice (Indice 1, Selettore 0x08)
+; Code segment descriptor (Index 1, Selector 0x08)
 code_seg: 
-  DW 0xFFFF                   ; Limite (0-15)
+  DW 0xFFFF                   ; Limit (0-15)
   DW 0x0000                   ; Base (0-15)
   DB 0x00                     ; Base (16-23)
   DB 0b10011010               ; Access Byte: Present, Ring 0, Code, Executable, Readable
-  DB 0b11001111               ; Flags (4K granularity, 32-bit) + Limite (16-19)
+  DB 0b11001111               ; Flags (4K granularity, 32-bit) + Limit (16-19)
   DB 0x00                     ; Base (24-31)
 
-; Descrittore segmento dati (Indice 2, Selettore 0x10)
+; Data segment descriptor (Index 2, Selector 0x10)
 data_seg:
   DW 0xFFFF
   DW 0x0000
@@ -88,13 +88,13 @@ protected_mode:
 
 
 ; test write memory
-MOV DWORD [0x1000], 0x12345678
+  MOV DWORD [0x1000], 0x12345678
 
-;test write to video memory, vga not working in qemu
-MOV WORD [0xB8000], 0x0F48  ; Attribute 0x0F, Character 'H' (0x48)
-MOV WORD [0xB8002], 0x0F49  ; Attribute 0x0F, Character 'I' (0x49)
-;HLT
-JMP $ ;Infinite loop, hang it here.
+  ;test write to video memory, vga not working in qemu
+  MOV WORD [0xB8000], 0x0F48  ; Attribute 0x0F, Character 'H' (0x48)
+  MOV WORD [0xB8002], 0x0F49  ; Attribute 0x0F, Character 'I' (0x49)
+  ;HLT
+  JMP $ ;Infinite loop, hang it here.
 
 ; ======== FILLER TO 0xFFF0 ========
 TIMES 0xFFF0 - ($ - $$) DB 0

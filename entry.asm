@@ -43,7 +43,7 @@ idt_descriptor:
 ; ====  PROTECTED MODE JUMP ====
 
 protected_mode_jump:
-  DD protected_mode  ; Offset a 32 bit (l'indirizzo fisico reale)
+  DD protected_mode  ; 32 bit offset (32 bit physical address)
   DW CODE_SEGMENT
 
 
@@ -59,12 +59,8 @@ START:
   MOV AX, CS
   MOV DS, AX ; setup data segment
 
-  
-  LIDT [idt_descriptor] ; load empty IDT
-
-  ; calculate GDT base address and load it
-  MOV EAX, (0xF0000*4 + temp_gdt) 
-  MOV [temp_gdt_descriptor + 2], EAX
+  ; Load IDT and GDT
+  LIDT [idt_descriptor]
   DB 0x66;
   LGDT [temp_gdt_descriptor]
 

@@ -62,14 +62,11 @@ START:
   
   LIDT [idt_descriptor] ; load empty IDT
 
-  ; calculate GDT base address 
-  XOR EAX, EAX
-  MOV AX, CS                 ; EAX = 0xF000
-  SHL EAX, 4                  ; EAX = 0xF0000 (base fisica)
-  ADD EAX, temp_gdt          ; Aggiungi l'offset della GDT
-  MOV [temp_gdt_descriptor + 2], EAX ; set GDT base address
+  ; calculate GDT base address and load it
+  MOV EAX, (0xF0000*4 + temp_gdt) 
+  MOV [temp_gdt_descriptor + 2], EAX
   DB 0x66;
-  LGDT [temp_gdt_descriptor] ;load temp gdt descriptor
+  LGDT [temp_gdt_descriptor]
 
   ; enter protected code
   MOV EBX, CR0 

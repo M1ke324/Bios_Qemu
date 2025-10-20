@@ -6,7 +6,7 @@ This project assembles a BIOS-like binary
 
 This project is intended to be run with QEMU. It requires:
 
-- nasm (Netwide Assembler) installed
+- nasm
 - make
 - qemu-system-x86_64 (or another suitable QEMU binary) to run the image
 
@@ -18,10 +18,7 @@ Install examples:
 
 The included Makefile automates assembling, linking and running the BIOS image. Common targets:
 
-- `all` (default)  
-    Build the final binary/image.
-
-- `bios.bin`  
+- `bios.bin` (default)
     Assemble source files with nasm
 
 - `run`  

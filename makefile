@@ -5,11 +5,11 @@ bios.bin: build/bios.elf
 
 build/bios.elf:	entry.s build
 	gcc entry.s  \
-		-fno-pie \ 				#Tell compiler to not create a position independent executable
-		-no-pie  \ 				#Tell linker to not create a position independent executable
-		-nostdlib \				#Do not use standard library
-		-m32 	 \				#Generate 32 bit elf (As do not receive this directive, it will read the .code directive in the assembly file)
-		-T scripts/linker.ld \	#Use custom linker script to place code entry code at 0xFFFFFFF0
+		-fno-pie \
+		-no-pie  \
+		-nostdlib \
+		-m32 	 \
+		-T scripts/linker.ld \
 		-o build/bios.elf 
 
 build:

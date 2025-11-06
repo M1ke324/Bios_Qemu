@@ -17,7 +17,7 @@ LOGDIR = logfiles
 #MACHINE
 QEMU = qemu-system-x86_64
 QEMUFLAG = -vga std -no-reboot -no-shutdown -bios bios.bin
-QEMUDEBUG = -d in_asm,cpu_reset,exec,unimp,int,vpu -trace enable=vga* -D logfiles/logfile$$(date "+%y-%m-%d-%H:%M:%S").txt -S -s  #
+QEMUDEBUG =  -trace enable=vga* -D logfiles/logfile$$(date "+%y-%m-%d-%H:%M:%S").txt -S -s  #-d in_asm,cpu_reset,exec,unimp,int,vpu
 	#debug version require to digit "c" to start
 
 #FILE

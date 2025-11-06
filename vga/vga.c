@@ -5,7 +5,7 @@
 void clearScreen(void) {
   uint32_t i;
   for (i = 0; i < COLS * ROWS; ++i){
-    videoMemory[i*2] = 'A';
+    videoMemory[i*2] = ' ';
     videoMemory[i*2+1]=0x07;
   }
 }
@@ -25,6 +25,11 @@ static void CRTCProtection(bool enable){
     reg=reg & ~0x80;
     outToRegisterB(reg, DATACRTC);
   }else{
+    outToRegisterB(EHBR,ADDRCRTC);
+    reg=inFromRegistersB(DATACRTC);
+    reg= reg | 0x80;
+    outToRegisterB(reg, DATACRTC);
+
     outToRegisterB(LPHR,ADDRCRTC);
     reg=inFromRegistersB(DATACRTC);
     reg=reg | 0x80;
@@ -46,6 +51,25 @@ void screen(bool enable){
     outToRegisterB( inFromRegistersB(DATASR) | 0x20 , DATASR);
 }
 
+static uint8_t *getAddress(void){
+  uint8_t mr;
+  outToRegisterB(MISCELLANEOUS,ADDRGCR);
+  mr = inFromRegistersB(DATAGCR);
+  mr >>= 2;
+  mr &= 3;
+  switch (mr) {
+    case 0: /*passtrought*/
+    case 1:
+      return (uint8_t *) 0xA0000;
+    case 2:
+      return (uint8_t *) 0xB0000;
+    case 3:
+      return (uint8_t *) 0xB8000;
+  }
+  return NULL;
+}
+
+
 static void setPlane(uint8_t p){
   uint8_t mask;
 
@@ -62,14 +86,18 @@ static void setPlane(uint8_t p){
 static void writeFont(void){
   uint8_t SR2, SR4, GC4, GC5, GC6;
   uint8_t *src=font8x16;
+  uint32_t i;
+
+  uint8_t *mem;
 
   /*save ragister modified by setPlane() and disable odd/even and chain four */
+
   outToRegisterB(MAPMASK,ADDRSR);
   SR2=inFromRegistersB(DATASR);
 
   outToRegisterB(MEMORYMODE,ADDRSR);
   SR4=inFromRegistersB(DATASR);
-  outToRegisterB(SR4 & ~0x04, DATASR); /* 0 -> chain four*/
+  outToRegisterB(SR4 | 0x04, DATASR); /* 1 -> chain four, to disable it*/
 
   outToRegisterB(READMAPSELECT,ADDRGCR);
   GC4=inFromRegistersB(DATAGCR);
@@ -84,7 +112,13 @@ static void writeFont(void){
 
   setPlane(2);
 
-  memcpy((uint8_t *)((0xA0000)), src, DATAFONTLENGHT);
+  mem=getAddress(); /*get the plane address*/
+
+  /*fonts are 16*8 bit but vga reserve a 32*8 space for each font charchter*/
+  for(i = 0; i < 256; i++){
+    memcpy((uint8_t *)(mem + (i * 32)), src, FONTHEIGHT);
+		src += FONTHEIGHT;
+	}
 
   /*Restore registers*/
   outToRegisterB(MAPMASK, ADDRSR);
@@ -121,13 +155,11 @@ static void dump(void){
     inFromSameDataAddrRegister(i, ACR);
 
   /*Lock 16-color palette and unblank display*/
-  inFromRegistersB(IS1);
+  CLEARFLIPFLOP();
   outToRegisterB(0x20,ACR);
-  
 
   CRTCProtection(true);
 }
-
 
 void vgaInit(void){
   uint8_t i;
@@ -163,7 +195,7 @@ void vgaInit(void){
     outToSameDataAddrRegister(*(regs++),i, ACR);
 
   /*Lock 16-color palette and unblank display*/
-  inFromRegistersB(IS1);
+  CLEARFLIPFLOP();
   outToRegisterB(0x20,ACR);
 
   /*======== CLEAR SCREEN ========*/

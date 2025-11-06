@@ -4,9 +4,9 @@
 /*Fill the screen with blank spaces*/
 void clearScreen(void) {
   uint32_t i;
-  for (i = 0; i < COLS * ROWS; ++i){
-    videoMemory[i*2] = ' ';
-    videoMemory[i*2+1]=0x07;
+  for (i = 0; i < COLS * ROWS; i++){
+    videoMemory[i*2] = 0xdb;
+    videoMemory[i*2+1]=0x47;
   }
 }
 
@@ -204,14 +204,11 @@ void vgaInit(void){
   /*======== LOAD FONTS ========*/
   writeFont();
 
-  /*======== EANBLE DSIPLAY & LOCK CRTC========*/
+  /*======== EANBLE DSIPLAY ========*/
   screen(true);
-  CRTCProtection(true);
 
-  dump();
-
-  videoMemory[0] = 'A';
-  videoMemory[1] = 0x07;
+  videoMemory[0] = 0xdb;
+  videoMemory[1] = 0x47;
 
   videoMemory[2] = 'B';
   videoMemory[3] = 0x07;

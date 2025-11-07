@@ -5,8 +5,8 @@
 void clearScreen(void) {
   uint32_t i;
   for (i = 0; i < COLS * ROWS; i++){
-    videoMemory[i*2] = 0xdb;
-    videoMemory[i*2+1]=0x47;
+    videoMemory[i*2] = ' ';
+    videoMemory[i*2+1]= 0x07;
   }
 }
 

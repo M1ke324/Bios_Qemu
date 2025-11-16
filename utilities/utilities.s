@@ -1,7 +1,14 @@
-.global outToRegisterB
-.type outToRegisterB, @function
 
-outToRegisterB:
+/* ************* *
+ *      OUT      * 
+ * ************* */
+
+
+/*====== 1 Byte ======*/
+.global outb
+.type outb, @function
+
+outb:
   push %ebp
   mov %esp, %ebp
   mov 8(%ebp),  %al
@@ -10,22 +17,43 @@ outToRegisterB:
   pop %ebp
   ret
 
-.globl outToRegisterL
-.type  outToRegisterL, @function
 
-outToRegisterL:
+/*====== 2 Byte ======*/
+.global outw
+.type outw, @function
+
+outw:
+  push %ebp
+  mov  %esp, %ebp
+  movw 8(%ebp), %ax
+  mov  12(%ebp), %dx
+  outw %ax, %dx
+  pop  %ebp
+  ret
+
+
+/*====== 4 Byte ======*/
+.globl outl
+.type  outl, @function
+
+outl:
     push   %ebp
     mov    %esp, %ebp
-    mov    8(%ebp), %eax    # primo argomento: uint32_t data
-    mov    12(%ebp), %dx    # secondo argomento: uint16_t port (in realtà 32-bit passato, usiamo i bit bassi)
-    outl   %eax, %dx        # scrive 32-bit (outl) dalla EAX alla porta DX
+    mov    8(%ebp), %eax
+    mov    12(%ebp), %dx
+    outl   %eax, %dx
     pop    %ebp
     ret
 
-.globl inFromRegistersB
-.type inFromRegistersB, @function
+/* ************* *
+ *      IN       *
+ * ************* */
 
-inFromRegistersB:
+/*====== 1 Byte ======*/
+.globl inb
+.type inb, @function
+
+inb:
   push %ebp
   mov %esp, %ebp
 
@@ -37,10 +65,12 @@ inFromRegistersB:
   pop %ebp
   ret
 
-.globl inFromRegistersL
-.type inFromRegistersL, @function
 
-inFromRegistersL:
+/*====== 4 Byte ======*/
+.globl inl
+.type inl, @function
+
+inl:
     push %ebp
     mov  %esp, %ebp
 

@@ -78,13 +78,6 @@ protected_mode:
 
   call vgaInit
 
-# test write memory
-  movl $0x12345678, (0x1000) #-> its writing
-
-  # test write to video memory
-
-  movw $0x480F, (0xB8008)  # Attribute 0x0F, Character 'H' (0x48)   
-  movw $0x490F, (0xB8010)  # Attribute 0x0F, Character 'I' (0x49)   #->its not printng
   #HLT
   jmp . #Infinite loop, hang it here.
 

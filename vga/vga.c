@@ -1,63 +1,22 @@
 #include "vga.h"
-#include "../utilities/utilities.h"
+#include "dataVga.h" /*value for registers, font & palette*/
+#include "vgaIO.h" /*To read/write easly vga register*/
+#include "../utilities/utilities.h" /*memcpy & in/out function*/
 
-/* ************* *
- *     VGA IO    * 
- * ************* */
-
-/*read the register indesed by AddrReg (for CRTC GCR SR)*/
-uint8_t inDataAddrb(uint8_t index, uint16_t AddrReg){
-  outb(index,AddrReg);
-  return inb(AddrReg+1);
-}
-
-/*Read ACR, disable PAS in the read and than restore the original value*/
-uint8_t readACR(uint8_t index){
-  uint8_t orig, v;
-
-  clearFlipflop();
-  /*orig = inb(ACRREAD);*/
-  outb(index, ACRWRITE);
-  v = inb(ACRREAD);/*
-  clearFlipflop();
-  outb(orig, ACRWRITE);*/
-  return v;
-}
-
-/*write ACR, disable PAS in the write and than restore the original value*/
-void writeACR(uint8_t value, uint8_t index){
-  uint8_t orig;
-
-  clearFlipflop();
-  /*orig = inb(ACRREAD);*/
-  outb(index, ACRWRITE);
-  outb(value, ACRWRITE);
-  /*outb(orig, ACRWRITE);*/
-}
-
-/* ******************* *
- *    VGA UTILITIES    * 
- * ******************* */
+/* ********************** *
+ *    STATIC UTILITIES    *
+ * ********************** */
 
 /*
  * true -> Ram Access palette
  * flase -> Display Access palette
  */
-void accessPalette(bool enable){
+static void accessPalette(bool enable){
   clearFlipflop();
   if(enable){
     outb(inb(ACRREAD) & 0x20, ACRWRITE);/*0-> RAM*/
   }else{
     outb(inb(ACRREAD) | 0x20, ACRWRITE);/*1-> Display*/
-  }
-}
-
-/*Fill the screen with blank spaces*/
-void clearScreen(void) {
-  uint32_t i;
-  for (i = 0; i < COLS * ROWS; i++){
-    videoMemory[i*2] = 0x20; 
-    videoMemory[i*2+1]=0x07;
   }
 }
 
@@ -73,30 +32,6 @@ static void CRTCProtection(bool enable){
   }
 }
 
-/*Set screen on/off*/
-void screen(bool enable){
-  if(enable)
-    maskReg(0,0x20,CLOCKINGMODE,ADDRSR);/* 0 -> Screen on*/
-  else
-    maskReg(0x20,0,CLOCKINGMODE,ADDRSR);
-}
-
-static uint8_t *getAddress(void){
-  uint8_t mr =  inDataAddrb(MISCELLANEOUSGCR,ADDRGCR);
-  mr = ( mr>>2 ) & 3;
-  switch (mr) {
-    case 0: /*passtrought*/
-    case 1:
-      return (uint8_t *) 0xA0000;
-    case 2:
-      return (uint8_t *) 0xB0000;
-    case 3:
-      return (uint8_t *) 0xB8000;
-  }
-  return NULL;
-}
-
-
 static void setPlane(uint8_t p){
   uint8_t mask;
   p&=3;
@@ -105,28 +40,17 @@ static void setPlane(uint8_t p){
   outDataAddrb(mask,MAPMASK,ADDRSR); /*Write plane*/
 }
 
-static void getFontAccess(void){
-    outDataAddrb(0x01, 0x00, ADDRSR);
-    outDataAddrb(0x04, 0x02, ADDRSR);
-    outDataAddrb(0x07, 0x04, ADDRSR);
-    outDataAddrb(0x03, 0x00, ADDRSR);
-    outDataAddrb(0x02, 0x04, ADDRGCR);
-    outDataAddrb(0x00, 0x05, ADDRGCR);
-    outDataAddrb(0x00, 0x06, ADDRGCR);
-}
+/* ********************** *
+ *   PUBLIC  UTILITIES    *
+ * ********************** */
 
-static void releaseFontAccess(void){
-    uint16_t v;
-    outDataAddrb(0x01, 0x00, ADDRSR);
-    outDataAddrb(0x03, 0x02, ADDRSR);
-    outDataAddrb(0x03, 0x04, ADDRSR);
-    outDataAddrb(0x03, 0x00, ADDRSR);
-    v = (inb(MOR) & 0x01) ? 0x0e : 0x0a;
-    outDataAddrb(v, 0x06, ADDRGCR);
-    outDataAddrb(0x00, 0x04, ADDRGCR);
-    outDataAddrb(0x10, 0x05, ADDRGCR);
+/*Set screen on/off*/
+void screen(bool enable){
+  if(enable)
+    maskReg(0,0x20,CLOCKINGMODE,ADDRSR);/* 0 -> Screen on*/
+  else
+    maskReg(0x20,0,CLOCKINGMODE,ADDRSR);
 }
-
 
 /* ******************* *
  *       VGA INIT      * 
@@ -136,13 +60,12 @@ static void writeFont(void){
   uint8_t sr2, sr4, gc4, gc5, gc6;
   uint8_t *src=font8x16;
   uint32_t i;
-  uint8_t *mem;
-  /* FIXME: */
+
   /*save ragister modified by setPlane() and disable odd/even and chain four */
   
-  sr2=inDataAddrb(MAPMASK,ADDRSR); /*0x02*/
+  sr2=inDataAddrb(MAPMASK,ADDRSR);
  
-  sr4=inDataAddrb(MEMORYMODE,ADDRSR);/*0x04*/
+  sr4=inDataAddrb(MEMORYMODE,ADDRSR);
   maskReg(0x04,0,MEMORYMODE,ADDRSR);/* 1 -> chain four, to disable it*/
   
   gc4=inDataAddrb(READMAPSELECT,ADDRGCR);
@@ -155,17 +78,11 @@ static void writeFont(void){
 
   setPlane(2);
 
-  mem=getAddress(); /*get the plane address*/
-
-  /*getFontAccess();*/
-
   /*fonts are 16*8 bit but vga reserve a 32*8 space for each font charchter*/
   for(i = 0; i < 256; i++){
-    memcpy((uint8_t *)(mem + (i * 32)), src, FONTHEIGHT);
+    memcpy((uint8_t *)(VIDEOMEM + (i * 32)), src, FONTHEIGHT);
 		src += FONTHEIGHT;
 	}
-
-  /*releaseFontAccess();*/
 
   /*Restore registers*/
   outb(MAPMASK, ADDRSR);
@@ -180,34 +97,6 @@ static void writeFont(void){
 	outb(gc6, DATAGCR);
 }
 
-/* FIXME: for debug purpose*/
-/*static void dump(void){
-  uint32_t i=0;
-  for(i=0;i<NUMSR;i++)
-    inFromDataAddrRegister(i,ADDRSR,DATASR);
-
- 
-  CRTCProtection(false);
-
-
-  for(i=0;i<NUMCRTC;i++)
-    inFromDataAddrRegister(i,ADDRCRTC,DATACRTC);
-
-
-  for(i=0;i<NUMGCR;i++)
-    inFromDataAddrRegister(i,ADDRGCR,DATAGCR);
-
-
-  for(i=0;i<NUMACR;i++)
-    inFromSameDataAddrRegister(i, ACR);
-
-
-  clearFlipflop();
-  outb(0x20,ACR);
-
-  CRTCProtection(true);
-}*/
-
 void vgaInit(void){
   uint32_t i;
   uint8_t *regs=textMode80x25;
@@ -215,11 +104,10 @@ void vgaInit(void){
   /*======= LOAD PALETTE =========*/
   outb(0xff,DACMASK);
   outb(0,WRITEADDRDAC);
-  for(i=0; i<VGAPALETTELENGHT ;i++)
-    outb(pal_vga[i],DATADAC);
+  for(i=0; i<NDATAPALETTE;i++)
+    outb(palette[i],DATADAC);
 
-
-  /*======== DISABLE DISAPLAY & UNLOCK CRTC========*/
+  /*======== DISABLE DISAPLAY ========*/
   screen(false);
 
   /*======== LOAD RREGISTERS ========*/
@@ -241,7 +129,7 @@ void vgaInit(void){
 
   /*Disable crtc protection*/
   CRTCProtection(false);
-  /*regs[EHBR]|= 0x80;
+  regs[EHBR]|= 0x80;
   regs[LPHR]&= ~0x80;
 
   /*CRTC register*/
@@ -259,12 +147,7 @@ void vgaInit(void){
 
   /*======== EANBLE DSIPLAY & LOCK CRTC========*/
   screen(true);
-
-  videoMemory[0] = 'A';
-  videoMemory[1] = 0x07;
-
-  videoMemory[2] = 'B';
-  videoMemory[3] = 0x07;
+  CRTCProtection(true);
 }
 
 

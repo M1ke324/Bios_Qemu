@@ -10,6 +10,7 @@ MEMORY
 
 SECTIONS
 {
+  /*32 bit, usual sections*/
   .text :
   {
     . = ORIGIN(rom);
@@ -36,23 +37,25 @@ SECTIONS
     *(COMMON)
   } > rom
 
+  /*16 bit code, has to be near the entry point to make the jmp possible*/
   .16 :
   {
-    . = (ORIGIN(rom) + LENGTH(rom) - 0x10000);
+    . = (ORIGIN(rom) + LENGTH(rom) - 0x10000); /*last 64kB */
     *(.rodata16)
     . = ALIGN(2);
     *(.text16)
   } > rom
 
+  /*real entry point of the bios*/
   .entry :
   {
-    . = (ORIGIN(rom) + LENGTH(rom) - 16);
+    . = (ORIGIN(rom) + LENGTH(rom) - 16);/*index of the entrypoint*/
     *(.entry);
     . = (ORIGIN(rom) + LENGTH(rom) -1);
-    BYTE(0x00);
+    BYTE(0x00);/*last byte #128kB */
   } > rom
 
-  /DISCARD/ :
+  /DISCARD/ : /*unused sections*/
   {
     *(.note.gnu.property)
     *(.comment)

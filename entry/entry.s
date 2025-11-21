@@ -75,11 +75,9 @@ protected_mode:
   movw %ax, %gs
   movl $0x90000, %esp
   movw %ax, %ss
-
-  call vgaInit
-
-  #HLT
-  jmp . #Infinite loop, hang it here.
+  
+  #Pass controll to the function main
+  jmp main
 
 # ================ REAL ENTRY POINT FOR BIOS ================
 

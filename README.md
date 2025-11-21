@@ -23,8 +23,8 @@ The included Makefile automates assembling, linking and running the BIOS image. 
 - `debug`  
     Starts QEMU with debugging options. Qemu opens a port on :1234 for gdb debugging and wait. It aslo print a log of the code execute by the machine and the read/write operations on the vga registers.
 
-- `clean` 
+- `clean`   
     Remove bios.bin, logfiles and build files.
 
-- `cleanLog`
+- `cleanLog`  
     Remove logfiles

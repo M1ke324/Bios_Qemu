@@ -28,7 +28,7 @@ void clearScreen(void) {
 #define LASTLINEADDRESS (VIDEOMEM + COLS*2*(ROWS-1))
 
 /*like printf but without formatting
- *obviously need the string terminatrion carachter
+ *obviously need the string termination carachter
  *the only special charachter that works is \n
  */
 void print(uint8_t rows, uint8_t cols,const char *string, const uint8_t attribute){

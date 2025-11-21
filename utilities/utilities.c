@@ -41,8 +41,8 @@ void print(uint8_t rows, uint8_t cols,const char *string, const uint8_t attribut
 
     if(*string == '\n'){
       string++;
-      if(vm >LASTLINEADDRESS)
-        vm=VIDEOMEM;
+      if(vm > (volatile uint8_t * ) LASTLINEADDRESS)
+        vm=(volatile uint8_t * )VIDEOMEM;
       else
         vm += (COLS*2) - (((uintptr_t)(vm) - VIDEOMEM) % (COLS*2));/*next line address calculation*/
     }

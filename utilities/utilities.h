@@ -39,7 +39,7 @@ extern volatile uint8_t * const videoMemory;
 #define WHITEONBLACK 0x07
 #define GREENONBLACK 0x0A
 
-void print(int8_t cols, int8_t rows, const char *string, const uint8_t attribute);
+void print(uint8_t cols, uint8_t rows, const char *string, const uint8_t attribute);
 void clearScreen(void);/*Fill the screen with blank spaces*/
 
 

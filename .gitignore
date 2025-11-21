@@ -1,4 +1,6 @@
 # Log files
 logfiles/
+# Build files
+build/
 # file binario
 bios.bin

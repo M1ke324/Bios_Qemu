@@ -1,10 +1,10 @@
 #COMPILER
 CC = gcc
-CFLAG = -fno-pie -no-pie -nostdlib -m32 -std=c89 -ffreestanding -fno-builtin -Wall -Wextra -O2 -g3 -fno-stack-protector
+CFLAG = -fno-pie -no-pie -nostdlib -m32 -std=c99 -ffreestanding -fno-builtin -Wall -Wextra -O2 -g3 -fno-stack-protector -mno-sse -mno-sse2 -mno-mmx -mno-80387
 
 #LINKER
 LSCRIPTS = scripts/linker.ld 
-LFLAG = -T $(LSCRIPTS) # -Wl,-Map=bios.map # to debug the linker scripts
+LFLAG = -T $(LSCRIPTS) -Wl,--no-warn-rwx-segments # -Map=bios.map # to debug the linker scripts
 
 #BIN
 BINTOOL = objcopy
@@ -17,10 +17,10 @@ LOGDIR = logfiles
 #MACHINE
 QEMU = qemu-system-x86_64
 QEMUFLAG = -vga std -no-reboot -no-shutdown -bios bios.bin
-QEMUDEBUG =  -trace enable=vga* -d in_asm,cpu_reset,exec,unimp,int,vpu -D logfiles/logfile$$(date "+%y-%m-%d-%H:%M:%S").txt -S -s  #debug version require to digit "c" to start
+QEMUDEBUG =  -trace enable=vga*,enable=pci* -d in_asm,cpu_reset,exec,unimp,int,vpu -D logfiles/logfile$$(date "+%y-%m-%d-%H:%M:%S").txt -S -s  #debug version require to digit "c" to start
 
 #FILE
-IN = entry/entry.s utilities/utilities.* vga/vga.* vga/dataVga.* vga/vgaIO.* main/main.c
+IN = entry/entry.s utilities/utilities.* vga/vga.* vga/dataVga.* vga/vgaIO.* main/main.c main/biosPrint.* pci/pci* pci/bar.* pci/conf.h
 ELF = $(BUILDDIR)/bios.elf
 BIN = bios.bin
 

@@ -3,11 +3,11 @@
 
 /*====== TYPES ======*/
 #define NULL ((void*)0)
-
-typedef enum {
+typedef _Bool bool;
+enum {
   false,
   true
-} bool;
+};
 
 /*stdint.h style*/
 typedef char int8_t;
@@ -36,11 +36,53 @@ void *memcpy(void *dest, void *src, uint32_t  count);
 /*====== VIDEO  ======*/
 extern volatile uint8_t * const videoMemory;
 
-#define WHITEONBLACK 0x07
-#define GREENONBLACK 0x0A
+//ATTRIBUTES ON BLACK
+#define BLACKONBLACK          0x00
+#define BLUEONBLACK           0x01
+#define GREENONBLACK          0x02
+#define CYANONBLACK           0x03
+#define REDONBLACK            0x04
+#define MAGENTAONBLACK        0x05
+#define BROWNONBLACK          0x06
+#define LIGHTGRAYONBLACK      0x07
+#define DARKGRAYONBLACK       0x08
+#define LIGHTBLUEONBLACK      0x09
+#define LIGHTGREENONBLACK     0x0A
+#define LIGHTCYANONBLACK      0x0B
+#define LIGHTREDONBLACK       0x0C
+#define LIGHTMAGENTAONBLACK   0x0D
+#define YELLOWONBLACK         0x0E
+#define WHITEONBLACK          0x0F
 
-void print(uint8_t cols, uint8_t rows, const char *string, const uint8_t attribute);
+#define NORMAL WHITEONBLACK
+#define SUCCESS GREENONBLACK
+#define NUMBER YELLOWONBLACK
+#define ERROR REDONBLACK
+
+void print(int8_t cols, int8_t rows, const char *string, const uint8_t attribute);/*printf only works \n*/
 void clearScreen(void);/*Fill the screen with blank spaces*/
+void intToStr(uint32_t value, char *buffer, int base);/*convert int in string*/
 
+/*print after last character*/
+static inline void append(char* stringPointer,uint8_t attribute){
+  print(-1,-1,stringPointer,attribute);
+}
+
+/*print new line*/
+static inline void appendl(char *stringPointer,uint8_t attribute){
+  print(-1,0,stringPointer,attribute);
+}
+
+/*print integer after last character*/
+static inline void appendInt(uint32_t integer,char *buffer,int base,uint8_t attribute){
+  intToStr(integer,buffer,base);
+  append(buffer,attribute);
+}
+
+/*print integer new line*/
+static inline void appendIntl(uint32_t integer, char *buffer, int base, uint8_t attribute){
+  intToStr(integer,buffer,base);
+  appendl(buffer,attribute);
+}
 
 #endif

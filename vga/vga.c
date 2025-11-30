@@ -12,23 +12,23 @@
  * flase -> Display Access palette
  */
 static void accessPalette(bool enable){
-  clearFlipflop();
+  CLEAR_FLIPFLOP();
   if(enable){
-    outb(inb(ACRREAD) & 0x20, ACRWRITE);/*0-> RAM*/
+    outb(inb(ACR_READ_REG) & 0x20, ACR_WRITE_REG);/*0-> RAM*/
   }else{
-    outb(inb(ACRREAD) | 0x20, ACRWRITE);/*1-> Display*/
+    outb(inb(ACR_READ_REG) | 0x20, ACR_WRITE_REG);/*1-> Display*/
   }
 }
 
 /*Enable/Disable crtc write protection on 0-7 registers*/
 static void CRTCProtection(bool enable){
   if(!enable){
-    maskReg(0x80,0,EHBR,ADDRCRTC);
-    maskReg(0,0x80,LPHR,ADDRCRTC);
+    maskIndexDataReg(0x80,0,EHBR_INDEX,CRTC_INDEX_REG);
+    maskIndexDataReg(0,0x80,LPHR_INDEX,CRTC_INDEX_REG);
   }else{
-    maskReg(0x80,0,EHBR,ADDRCRTC);
-    maskReg(0x80,0,LPHR,ADDRCRTC);
-    maskReg(0,0x80,EHBR,ADDRCRTC);
+    maskIndexDataReg(0x80,0,EHBR_INDEX,CRTC_INDEX_REG);
+    maskIndexDataReg(0x80,0,LPHR_INDEX,CRTC_INDEX_REG);
+    maskIndexDataReg(0,0x80,EHBR_INDEX,CRTC_INDEX_REG);
   }
 }
 
@@ -36,8 +36,8 @@ static void setPlane(uint8_t p){
   uint8_t mask;
   p&=3;
   mask= 1 << p;
-  outDataAddrb(p,READMAPSELECT,ADDRGCR); /*Read plane*/
-  outDataAddrb(mask,MAPMASK,ADDRSR); /*Write plane*/
+  outIndexDataReg(p,READ_MAP_SELECT_INDEX,GC_INDEX_REG); /*Read plane*/
+  outIndexDataReg(mask,MAP_MASK_INDEX,SR_INDEX_REG); /*Write plane*/
 }
 
 /* ********************** *
@@ -47,9 +47,9 @@ static void setPlane(uint8_t p){
 /*Set screen on/off*/
 void screen(bool enable){
   if(enable)
-    maskReg(0,0x20,CLOCKINGMODE,ADDRSR);/* 0 -> Screen on*/
+    maskIndexDataReg(0,0x20,CLOCKING_MODE_INDEX,SR_INDEX_REG);/* 0 -> Screen on*/
   else
-    maskReg(0x20,0,CLOCKINGMODE,ADDRSR);
+    maskIndexDataReg(0x20,0,CLOCKING_MODE_INDEX,SR_INDEX_REG);
 }
 
 /* ******************* *
@@ -63,18 +63,18 @@ static void writeFont(void){
 
   /*save ragister modified by setPlane() and disable odd/even and chain four */
   
-  sr2=inDataAddrb(MAPMASK,ADDRSR);
+  sr2=inIndexDataReg(MAP_MASK_INDEX,SR_INDEX_REG);
  
-  sr4=inDataAddrb(MEMORYMODE,ADDRSR);
-  maskReg(0x04,0,MEMORYMODE,ADDRSR);/* 1 -> chain four, to disable it*/
+  sr4=inIndexDataReg(MEMORY_MODE_INDEX,SR_INDEX_REG);
+  maskIndexDataReg(0x04,0,MEMORY_MODE_INDEX,SR_INDEX_REG);/* 1 -> chain four, to disable it*/
   
-  gc4=inDataAddrb(READMAPSELECT,ADDRGCR);
+  gc4=inIndexDataReg(READ_MAP_SELECT_INDEX,GC_INDEX_REG);
 
-  gc5=inDataAddrb(MODEREGISTER,ADDRGCR);
-  maskReg(0,0x10,MODEREGISTER,ADDRGCR);/* 0 -> odd/even register */
+  gc5=inIndexDataReg(MODE_REGISTER_INDEX,GC_INDEX_REG);
+  maskIndexDataReg(0,0x10,MODE_REGISTER_INDEX,GC_INDEX_REG);/* 0 -> odd/even register */
 
-  gc6=inDataAddrb(MISCELLANEOUSGCR,ADDRGCR);
-  maskReg(0,0x02,MISCELLANEOUSGCR,ADDRGCR);/* 0 -> Chain Odd-even register */
+  gc6=inIndexDataReg(MISCELLANEOUS_INDEX,GC_INDEX_REG);
+  maskIndexDataReg(0,0x02,MISCELLANEOUS_INDEX,GC_INDEX_REG);/* 0 -> Chain Odd-even register */
 
   setPlane(2);
 
@@ -85,16 +85,16 @@ static void writeFont(void){
 	}
 
   /*Restore registers*/
-  outb(MAPMASK, ADDRSR);
-  outb(sr2, DATASR);
-  outb(MEMORYMODE, ADDRSR);
-  outb(sr4, DATASR);
-  outb(READMAPSELECT, ADDRGCR);
-  outb(gc4, DATAGCR);
-	outb(MODEREGISTER, ADDRGCR);
-	outb(gc5, DATAGCR);
-	outb(MISCELLANEOUSGCR, ADDRGCR);
-	outb(gc6, DATAGCR);
+  outb(MAP_MASK_INDEX, SR_INDEX_REG);
+  outb(sr2, SR_DATA_REG);
+  outb(MEMORY_MODE_INDEX, SR_INDEX_REG);
+  outb(sr4, SR_DATA_REG);
+  outb(READ_MAP_SELECT_INDEX, GC_INDEX_REG);
+  outb(gc4, GC_DATA_REG);
+	outb(MODE_REGISTER_INDEX, GC_INDEX_REG);
+	outb(gc5, GC_DATA_REG);
+	outb(MISCELLANEOUS_INDEX, GC_INDEX_REG);
+	outb(gc6, GC_DATA_REG);
 }
 
 void vgaInit(void){
@@ -102,10 +102,10 @@ void vgaInit(void){
   uint8_t *regs=textMode80x25;
 
   /*======= LOAD PALETTE =========*/
-  outb(0xff,DACMASK);
-  outb(0,WRITEADDRDAC);
+  outb(0xff,DAC_MASK_REG);
+  outb(0,DAC_INDEX_WRITE_REG);
   for(i=0; i<NDATAPALETTE;i++)
-    outb(palette[i],DATADAC);
+    outb(palette[i],DAC_DATA_REG);
 
   /*======== DISABLE DISAPLAY ========*/
   screen(false);
@@ -113,28 +113,28 @@ void vgaInit(void){
   /*======== LOAD RREGISTERS ========*/
   
   /*Attribute Controller Registers*/
-  for(i=0;i<NUMACR;i++)
+  for(i=0;i<NACR;i++)
     writeACR(*(regs++),i);
   
   /*Sequencer registers*/
-  for(i=0;i<NUMSR;i++)
-    outDataAddrb(*(regs++),i,ADDRSR);
+  for(i=0;i<NSR;i++)
+    outIndexDataReg(*(regs++),i,SR_INDEX_REG);
 
   /*Graphics Controller Registers*/
-  for(i=0;i<NUMGCR;i++)
-    outDataAddrb(*(regs++),i,ADDRGCR);
+  for(i=0;i<NGCR;i++)
+    outIndexDataReg(*(regs++),i,GC_INDEX_REG);
 
   /*General Regiser*/
   outb(*(regs++),MOR);
 
   /*Disable crtc protection*/
   CRTCProtection(false);
-  regs[EHBR]|= 0x80;
-  regs[LPHR]&= ~0x80;
+  regs[EHBR_INDEX]|= 0x80;
+  regs[LPHR_INDEX]&= ~0x80;
 
   /*CRTC register*/
-  for(i=0;i<NUMCRTC;i++)
-    outDataAddrb(*(regs++),i,ADDRCRTC);
+  for(i=0;i<NCRTC;i++)
+    outIndexDataReg(*(regs++),i,CRTC_INDEX_REG);
 
   /*Lock 16-color palette and unblank display*/
   accessPalette(false);

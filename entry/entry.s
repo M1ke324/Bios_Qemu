@@ -57,7 +57,6 @@ START:
   orl $0x11, %ebx
   movl %ebx, %cr0
 
-  movl $protected_mode, %eax
   # far jump to clear prefetch queue
   ljmpl $0x08,$protected_mode
 

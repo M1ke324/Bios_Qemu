@@ -3,7 +3,7 @@
  * ************* */
 
 /*====== 1 Byte ======*/
-.global outb
+.globl outb
 .type outb, @function
 
 outb:
@@ -16,7 +16,7 @@ outb:
   ret
 
 /*====== 2 Byte ======*/
-.global outw
+.globl outw
 .type outw, @function
 
 outw:
